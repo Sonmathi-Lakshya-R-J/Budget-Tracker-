@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Tracker - Personal Finance Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- Login/Signup Modal -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">Login</button>
+        <button class="tab-btn" data-tab="signup">Sign Up</button>
+      </div>
+      
+      <form id="login-form" class="auth-form active">
+        <h2>Welcome Back</h2>
+        <input type="text" id="login-username" placeholder="Username" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit">Login</button>
+        <p class="error-message" id="login-error"></p>
+      </form>
+      
+      <form id="signup-form" class="auth-form">
+        <h2>Create Account</h2>
+        <input type="text" id="signup-username" placeholder="Username" required>
+        <input type="email" id="signup-email" placeholder="Email (optional)">
+        <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required>
+        <button type="submit">Sign Up</button>
+        <p class="error-message" id="signup-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App (hidden until logged in) -->
+  <div id="app" class="hidden">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>💰 Budget Tracker</h1>
+        <div class="header-actions">
+          <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
+          <button id="logout-btn" class="btn-secondary">Logout</button>
+        </div>
+      </div>
+    </header>
+
+  <div class="container">
+      <!-- Quick Stats -->
+      <section class="stats-section">
+        <div class="stat-card income">
+          <h3>Total Income</h3>
+          <p class="stat-value" id="total-income">₹0</p>
+        </div>
+        <div class="stat-card expense">
+          <h3>Total Expenses</h3>
+          <p class="stat-value" id="total-expense">₹0</p>
+        </div>
+        <div class="stat-card balance">
+          <h3>Balance</h3>
+          <p class="stat-value" id="balance">₹0</p>
+        </div>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs">
+        <button class="tab active" data-view="transactions">Transactions</button>
+        <button class="tab" data-view="analytics">Analytics</button>
+        <button class="tab" data-view="budgets">Budgets</button>
+        <button class="tab" data-view="reports">Reports</button>
+      </nav>
+
+      <!-- Transactions View -->
+      <div id="transactions-view" class="view active">
+        <div class="section-header">
+          <h2>Transactions</h2>
+          <button id="quick-add-btn" class="btn-primary">+ Quick Add</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+          <input type="text" id="search-input" placeholder="Search transactions...">
+          <select id="filter-type">
+            <option value="">All Types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <select id="filter-category">
+            <option value="">All Categories</option>
+          </select>
+          <input type="date" id="filter-start-date">
+          <input type="date" id="filter-end-date">
+          <button id="clear-filters" class="btn-secondary">Clear</button>
+        </div>
+
+        <!-- Transaction Form -->
+        <form id="transaction-form" class="transaction-form">
+      <input type="text" id="description" placeholder="Description" required>
+          <input type="number" id="amount" placeholder="Amount" step="0.01" required>
+      <select id="type">
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+          <input type="text" id="category" placeholder="Category (e.g., Food, Rent, Salary)" required list="category-list">
+          <datalist id="category-list"></datalist>
+          <input type="date" id="date" required>
+          <button type="submit" id="submit-btn">Add Transaction</button>
+          <button type="button" id="cancel-edit-btn" class="btn-secondary hidden">Cancel</button>
+        </form>
+
+        <!-- Transaction List -->
+        <ul id="transaction-list" class="transaction-list"></ul>
+      </div>
+
+      <!-- Analytics View -->
+      <div id="analytics-view" class="view">
+        <h2>Analytics Dashboard</h2>
+        
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Monthly Income vs Expense</h3>
+            <canvas id="monthly-chart"></canvas>
+          </div>
+          
+          <div class="chart-card">
+            <h3>Category-wise Expenses</h3>
+            <canvas id="category-chart"></canvas>
+          </div>
+          
+          <div class="chart-card full-width">
+            <h3>Spending Trends</h3>
+            <canvas id="trends-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="insights-section">
+          <h3>Top Spending Categories</h3>
+          <div id="top-categories"></div>
+        </div>
+      </div>
+
+      <!-- Budgets View -->
+      <div id="budgets-view" class="view">
+        <div class="section-header">
+          <h2>Budget Management</h2>
+          <button id="add-budget-btn" class="btn-primary">+ Add Budget</button>
+        </div>
+
+        <form id="budget-form" class="budget-form">
+          <input type="text" id="budget-category" placeholder="Category" required list="category-list">
+          <input type="number" id="budget-amount" placeholder="Budget Amount" step="0.01" required>
+          <select id="budget-period">
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+          <input type="number" id="budget-month" placeholder="Month (1-12)" min="1" max="12">
+          <input type="number" id="budget-year" placeholder="Year" value="2024" required>
+          <button type="submit">Set Budget</button>
+          <button type="button" id="cancel-budget-btn" class="btn-secondary hidden">Cancel</button>
+        </form>
+
+        <div id="budget-list" class="budget-list"></div>
+        <div id="budget-progress" class="budget-progress"></div>
+      </div>
+
+      <!-- Reports View -->
+      <div id="reports-view" class="view">
+        <h2>Reports & Export</h2>
+        
+        <div class="reports-section">
+          <div class="report-card">
+            <h3>Monthly Report</h3>
+            <input type="number" id="report-month" placeholder="Month" min="1" max="12" value="">
+            <input type="number" id="report-year" placeholder="Year" value="2024">
+            <button id="generate-monthly-report" class="btn-primary">Generate Report</button>
+            <div id="monthly-report-content"></div>
+          </div>
+
+          <div class="report-card">
+            <h3>Yearly Report</h3>
+            <input type="number" id="report-year-only" placeholder="Year" value="2024">
+            <button id="generate-yearly-report" class="btn-primary">Generate Report</button>
+            <div id="yearly-report-content"></div>
+          </div>
+
+          <div class="report-card">
+            <h3>Export Data</h3>
+            <input type="date" id="export-start-date">
+            <input type="date" id="export-end-date">
+            <button id="export-csv-btn" class="btn-primary">Export to CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Transaction Modal -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Transaction</h2>
+      <form id="edit-form">
+        <input type="text" id="edit-description" required>
+        <input type="number" id="edit-amount" step="0.01" required>
+        <select id="edit-type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <input type="text" id="edit-category" required>
+        <input type="date" id="edit-date" required>
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Save</button>
+          <button type="button" id="close-edit-modal" class="btn-secondary">Cancel</button>
+        </div>
+    </form>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
